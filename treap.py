@@ -1,4 +1,8 @@
-# 部分木を持たないバージョン
+"""
+部分木を持たないバージョン
+こちらに参照に作成
+https://www.techiedelight.com/implementation-treap-data-structure-cpp-java-insert-search-delete/
+"""
 
 from random import randrange
 
@@ -130,18 +134,41 @@ def delete_node(root, key):
     return root
 
 
+def print_pretty_treap(root, space):
+    height = 10
+
+    # Base case
+    if root is None:
+        return
+
+    # increase distance between levels
+    space += height
+
+    # print right child first
+    print_pretty_treap(root.right, space)
+
+    # print current node after padding with spaces
+    for i in range(height, space):
+        print(' ', end='')
+
+    print((root.key, root.priority))
+
+    # print left child
+    print_pretty_treap(root.left, space)
+
+
 if __name__ == "__main__":
-    length = 10000
-    keys = [randrange(1000000) for _ in range(length)]
-    priorities = [randrange(1000000) for _ in range(length)]
+    length = 5
+    keys = [randrange(100) for _ in range(length)]
+    priorities = [randrange(100) for _ in range(length)]
 
     root = None
     for key, priority in zip(keys, priorities):
         root = insert_node(root, key, priority)
 
-    # print(keys)
-    # print(priorities)
-    # print_treap(root)
+    print(keys)
+    print(priorities)
+    print_treap(root)
 
     # print(search_node(root, 10))
     # print(search_node(root, 9))
@@ -149,3 +176,5 @@ if __name__ == "__main__":
 
     # print('print deleted treap')
     # print_treap(delete_node(root, 220))
+
+    print_pretty_treap(root, 0)
