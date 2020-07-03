@@ -1,9 +1,3 @@
-"""
-部分木を持たないバージョン
-こちらに参照に作成
-https://www.techiedelight.com/implementation-treap-data-structure-cpp-java-insert-search-delete/
-"""
-
 from random import randrange
 import time
 from datetime import datetime
@@ -16,6 +10,8 @@ class TreapNode:
         self.priority = priority
         self.left = left
         self.right = right
+        self.right_size = 0
+        self.left_size = 0
 
 
 def rorate_left(root):
@@ -29,6 +25,8 @@ def rorate_left(root):
     R.left = root
     root.right = X
 
+    R.left.right_size = R.left_size
+    R.left_size += root.left_size + 1
     return R
 
 
@@ -42,6 +40,8 @@ def rorate_right(root):
     L.right = root
     root.left = Y
 
+    L.right.left_size = L.right_size
+    L.right_size += root.right_size + 1
     return L
 
 
@@ -58,12 +58,14 @@ def insert_node(root, key, priority):
         return TreapNode(key, priority)
 
     if key < root.key:
+        root.left_size += 1
         root.left = insert_node(root.left, key, priority)
 
         # 2分ヒープ条件を満たない場合回転が発生
         if root.left and root.left.priority > root.priority:
             root = rorate_right(root)
     else:
+        root.right_size += 1
         root.right = insert_node(root.right, key, priority)
 
         # 2分ヒープ条件を満たない場合回転が発生
@@ -161,21 +163,55 @@ def print_pretty_treap(root, space):
     print_pretty_treap(root.left, space)
 
 
+def print_pretty_treap_childsize(root, space):
+    height = 10
+
+    # Base case
+    if root is None:
+        return
+
+    # increase distance between levels
+    space += height
+
+    # print right child first
+    print_pretty_treap_childsize(root.right, space)
+
+    # print current node after padding with spaces
+    for i in range(height, space):
+        print(' ', end='')
+
+    print((root.key, root.priority, root.left_size, root.right_size))
+
+    # print left child
+    print_pretty_treap_childsize(root.left, space)
+
+
+def search_ith_node(root, i, delta_num=0):
+    if (root.left_size + delta_num + 1) < i:
+        delta_num += root.left_size + 1
+        root = root.right
+        return search_ith_node(root, i, delta_num)
+    elif (root.left_size + delta_num + 1) > i:
+        root = root.left
+        return search_ith_node(root, i, delta_num)
+    elif (root.left_size + delta_num + 1) == i:
+        return root.key
+
+
 if __name__ == "__main__":
-    import time
-    start = time.time()
-    length = 1000000
-    keys = [randrange(length) for _ in range(length)]
-    priorities = [randrange(length) for _ in range(length)]
+    start_time = datetime.now()
+    import random
+    keys = random.sample([v for v in range(100)], 10)
+    priorities = random.sample([v for v in range(100)], 10)
 
     root = None
     for key, priority in zip(keys, priorities):
         root = insert_node(root, key, priority)
-    elapsed_time = time.time() - start
-    print("elapsed_time:{0}".format(elapsed_time) + "[sec]")
+    end_time = datetime.now()
+    print('{}ms'.format((end_time-start_time).microseconds/1000))
 
-    # print(keys)
-    # print(priorities)
+    print(keys)
+    print(priorities)
     # print_treap(root)
 
     # print(search_node(root, 10))
@@ -186,3 +222,16 @@ if __name__ == "__main__":
     # print_treap(delete_node(root, 220))
 
     # print_pretty_treap(root, 0)
+
+    # print('================================================================================================')
+
+    # print_pretty_treap_childsize(root, 0)
+
+    # i番目に小さいデータ
+    value = search_ith_node(root, 3)
+    print('third value: ', value)
+
+    value = search_ith_node(root, 7)
+    print('third value: ', value)
+
+    print('sorted keys : ', sorted(keys))
